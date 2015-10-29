@@ -2,6 +2,7 @@ d = read.table("input/santa_cruz_pilot.v2.2015_0504.tsv", header=T, stringsAsFac
 b6 = read.table("input/batch06.txt", stringsAsFactors=F)
 b7 = read.table("input/batch07.txt", stringsAsFactors=F)
 b8 = read.table("input/batch08.txt", stringsAsFactors=F)
+b9 = read.table("input/batch09.txt", stringsAsFactors=F)
 
 getColumns = function(d) {
 	# Split sample ids into two lists for single and multiples
@@ -84,15 +85,17 @@ allsamples = singleCols$allsamples
 donorids = singleCols$donorids
 projectcodes = singleCols$projectcodes
 
-output$in_qc = rep(F, nrow(output))
+output = data.frame(output[,1:6], batch09=rep(F, nrow(output)), qc_failed=output$qc_failed)
 output = rbind(output, data.frame(projectcode=projectcodes,
-                                  donorid=donorids,
-                                  sampleid=allsamples,
-                                  batch06=rep(F, length(projectcodes)),
-                                  batch07=rep(F, length(projectcodes)),
-                                  batch08=rep(F, length(projectcodes)),
-                                  qc_failed=rep(F, length(projectcodes)),
-                                  in_qc=rep(T, length(projectcodes))))
+                    donorid=donorids,
+                    sampleid=allsamples,
+		    batch06=rep(F, length(projectcodes)),
+		    batch07=rep(F, length(projectcodes)),
+		    batch08=rep(F, length(projectcodes)),
+		    batch09=allsamples %in% b9[,1],
+		    qc_failed=!(allsamples %in% b9[,1])))
+
+
 dat.m = meltData(output)
 write.table(output, file="icgc_battenberg_batches_wide.tsv", quote=F, row.names=F, sep="\t")
 write.table(dat.m, file="icgc_battenberg_batches.tsv", quote=F, row.names=F, sep="\t")
